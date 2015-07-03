@@ -89,7 +89,7 @@ public class VideoListFragment extends Fragment  {
             @Override
             public void onResponse(Object id, int code) {
                     if(code == MainActivity.CODE_GET_TORRENT_FEED){
-                        List<RutrackerFeedParcer.Entry> entries = (List<RutrackerFeedParcer.Entry>) id;
+                        //List<RutrackerFeedParcer.Entry> entries = (List<RutrackerFeedParcer.Entry>) id;
                     }
             }
         }, new IErrorListener() {
