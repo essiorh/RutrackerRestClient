@@ -59,4 +59,8 @@ public class ApiServiceHelper {
     public static void getTorrentFeed(ResultReceiver resultReceiver) {
         startService(null, ACTION_GET_OUR_MOVIE_RSS_FEED, resultReceiver);
     }
+
+    public static void getImageUrl(ResultReceiver resultReceiver) {
+        startService(null, ACTION_GET_IMAGE_URL, resultReceiver);
+    }
 }

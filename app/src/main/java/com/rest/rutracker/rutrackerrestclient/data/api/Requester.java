@@ -22,6 +22,10 @@ import com.rest.rutracker.rutrackerrestclient.ui.framework.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedReader;
@@ -44,6 +48,8 @@ public class Requester {
     public static final String DEFAULT_MOVIE_URL = "2200.atom";
 
     private static final String SERVER = "http://feed.rutracker.org/atom/f/";
+    private static final String BASE_TORRENT_URL = "http://rutracker.org/forum/viewtopic.php?t=";
+    private static final String KEY_TORRENT_VIEW_TOPIC = "4869690";
     private static final String TAG = Requester.class.getSimpleName();
 
     public Requester() {
@@ -67,6 +73,8 @@ public class Requester {
     }
 
 
+
+
     private static JSONObject convertInputStreamToJSONObject(InputStream inputStream)
             throws JSONException {
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
@@ -85,6 +93,32 @@ public class Requester {
             e.printStackTrace();
         }
         return new JSONObject(result); }
+
+    public DataResponse getDescription() {
+        RestClient restClient = new RestClient();
+        String url = getDedcriptionUrl();
+        ApiResponse response = restClient.doGet(url);
+        DataResponse dataResponse = null;
+        try {
+            String theString = convertStreamToString(response.getInputSream());
+            Document doc = Jsoup.parse(theString);
+            Elements metaElements = doc.getElementsByClass("postImg postImgAligned img-right");
+            for (Element thisArt : metaElements) {
+                String title = thisArt.attr("title");
+                dataResponse = new DataResponse(title);
+                Log.d(TAG, "hello");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dataResponse;
+    }
+
+    private String convertStreamToString(java.io.InputStream is) {
+        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
+    }
+
 
     public DataResponse getCategories() {
 
@@ -264,14 +298,6 @@ public class Requester {
         }
     }
 
-
-
-    static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
-
     @NonNull
     private Gson getGSON() {
         return new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss Z").create();
@@ -279,6 +305,10 @@ public class Requester {
 
     private String getCategoriesUrl() {
         return SERVER + DEFAULT_MOVIE_URL;
+    }
+
+    private String getDedcriptionUrl() {
+        return BASE_TORRENT_URL + KEY_TORRENT_VIEW_TOPIC;
     }
 
     private String getArticlesUrl() {

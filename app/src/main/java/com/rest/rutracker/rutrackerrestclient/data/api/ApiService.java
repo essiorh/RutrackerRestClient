@@ -19,6 +19,7 @@ public class ApiService extends IntentService {
     public static final String RESPONSE_OBJECT_KEY = "RESPONSE_OBJECT_KEY";
 
     public static final int ACTION_GET_OUR_MOVIE_RSS_FEED = 101;
+    public static final int ACTION_GET_IMAGE_URL = 123;
 
     public static final int ACTION_GET_CATEGORIES = 1;
     public static final int ACTION_GET_ARTICLES = 2;
@@ -50,6 +51,10 @@ public class ApiService extends IntentService {
         switch (action) {
             case ACTION_GET_OUR_MOVIE_RSS_FEED:
                 response =requester.getMovies();
+                break;
+
+            case ACTION_GET_IMAGE_URL:
+                response =requester.getDescription();
                 break;
 
             case ACTION_GET_CATEGORIES:
