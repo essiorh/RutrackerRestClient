@@ -6,11 +6,15 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Xml;
+import android.view.Window;
 
 
+import com.rest.rutracker.rutrackerrestclient.data.api.request.ViewTopicRequest;
 import com.rest.rutracker.rutrackerrestclient.data.api.response.DataResponse;
 import com.rest.rutracker.rutrackerrestclient.data.api.request.DataRequest;
 import com.rest.rutracker.rutrackerrestclient.data.api.request.DeleteDataRequest;
+import com.rest.rutracker.rutrackerrestclient.data.api.response.DescriptionDataResponse;
 import com.rest.rutracker.rutrackerrestclient.data.containers.Article;
 import com.rest.rutracker.rutrackerrestclient.data.containers.TopicData;
 import com.rest.rutracker.rutrackerrestclient.data.containers.Val;
@@ -33,7 +37,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +51,10 @@ public class Requester {
     public static final String DEFAULT_MOVIE_URL = "2200.atom";
 
     private static final String SERVER = "http://feed.rutracker.org/atom/f/";
-    private static final String BASE_TORRENT_URL = "http://rutracker.org/forum/viewtopic.php?t=";
-    private static final String KEY_TORRENT_VIEW_TOPIC = "4869690";
+    private static final String BASE_VIEW_TOPIC_URL = "http://rutracker.org/forum/viewtopic.php?t=";
+    private static final String BASE_RUTRACKER_URL = "http://rutracker.org/";
+
+
     private static final String TAG = Requester.class.getSimpleName();
 
     public Requester() {
@@ -94,25 +99,29 @@ public class Requester {
         }
         return new JSONObject(result); }
 
-    public DataResponse getDescription() {
+    public DescriptionDataResponse getDescription(ViewTopicRequest keyViewTopic) {
+
         RestClient restClient = new RestClient();
-        String url = getDedcriptionUrl();
+        String url = getDedcriptionUrl(keyViewTopic.getKeyViewTopic());
         ApiResponse response = restClient.doGet(url);
-        DataResponse dataResponse = null;
+        DescriptionDataResponse dataResponse = null;
         try {
-            String theString = convertStreamToString(response.getInputSream());
-            Document doc = Jsoup.parse(theString);
-            Elements metaElements = doc.getElementsByClass("postImg postImgAligned img-right");
-            for (Element thisArt : metaElements) {
+            Document doc = Jsoup.parse(response.getInputSream(), "windows-1251", BASE_RUTRACKER_URL);
+            Elements elementsPostImage = doc.getElementsByClass("postImg");
+            for (Element thisArt : elementsPostImage) {
                 String title = thisArt.attr("title");
-                dataResponse = new DataResponse(title);
+                dataResponse = new DescriptionDataResponse(title);
                 Log.d(TAG, "hello");
+                break;
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
         return dataResponse;
     }
+
+
 
     private String convertStreamToString(java.io.InputStream is) {
         java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
@@ -307,8 +316,8 @@ public class Requester {
         return SERVER + DEFAULT_MOVIE_URL;
     }
 
-    private String getDedcriptionUrl() {
-        return BASE_TORRENT_URL + KEY_TORRENT_VIEW_TOPIC;
+    private String getDedcriptionUrl(String keyViewTopic) {
+        return BASE_VIEW_TOPIC_URL + keyViewTopic;
     }
 
     private String getArticlesUrl() {

@@ -14,4 +14,8 @@ public class DescriptionDataResponse extends DataResponse {
         this.urlImage = urlImage;
     }
 
+
+    public String getUrlImage() {
+        return urlImage;
+    }
 }

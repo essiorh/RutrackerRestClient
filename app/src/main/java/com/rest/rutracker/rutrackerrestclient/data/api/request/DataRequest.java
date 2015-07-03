@@ -5,22 +5,15 @@ import android.os.Parcelable;
 
 import com.rest.rutracker.rutrackerrestclient.data.containers.Article;
 
+import java.io.Serializable;
+
 /**
  * Created by ilia on 23.06.15.
  *
  * @author ilia
  */
-public class DataRequest implements Parcelable {
-    public static final Creator<DataRequest> CREATOR
-            = new Creator<DataRequest>() {
-        public DataRequest createFromParcel(Parcel in) {
-            return new DataRequest(in);
-        }
+public class DataRequest  implements Serializable {
 
-        public DataRequest[] newArray(int size) {
-            return new DataRequest[size];
-        }
-    };
     private Article article;
     private String uri;
 
@@ -34,6 +27,10 @@ public class DataRequest implements Parcelable {
         uri = in.readString();
     }
 
+    public DataRequest(){
+        this(null,null);
+    }
+
     public Article getArticle() {
         return article;
     }
@@ -42,14 +39,4 @@ public class DataRequest implements Parcelable {
         return uri;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(article, flags);
-        dest.writeString(uri);
-    }
 }

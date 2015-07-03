@@ -8,7 +8,10 @@ import android.os.ResultReceiver;
 
 import com.rest.rutracker.rutrackerrestclient.data.api.request.DataRequest;
 import com.rest.rutracker.rutrackerrestclient.data.api.request.DeleteDataRequest;
+import com.rest.rutracker.rutrackerrestclient.data.api.request.ViewTopicRequest;
 import com.rest.rutracker.rutrackerrestclient.data.api.response.DataResponse;
+
+import java.io.Serializable;
 
 public class ApiService extends IntentService {
 
@@ -54,7 +57,7 @@ public class ApiService extends IntentService {
                 break;
 
             case ACTION_GET_IMAGE_URL:
-                response =requester.getDescription();
+                response =requester.getDescription((ViewTopicRequest) getSerializableRequestObject(intent));
                 break;
 
             case ACTION_GET_CATEGORIES:
@@ -93,6 +96,10 @@ public class ApiService extends IntentService {
     private Parcelable getRequestObject(Intent intent) {
         return intent.getParcelableExtra(REQUEST_OBJECT_KEY);
     }
+    private Serializable getSerializableRequestObject(Intent intent) {
+        return intent.getSerializableExtra(REQUEST_OBJECT_KEY);
+    }
+
 
     private void sentMessage(int code, Bundle data) {
         if (!destroyed && receiver != null) {
