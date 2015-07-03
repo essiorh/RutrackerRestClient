@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.rest.rutracker.rutrackerrestclient.data.api.response.DataResponse;
 import com.rest.rutracker.rutrackerrestclient.data.model.RutrackerFeedParcer;
 import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity;
 import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity.*;
@@ -86,7 +87,7 @@ public class VideoListFragment extends Fragment  {
             @Override
             public void onResponse(Object id, int code) {
                     if(code == MainActivity.CODE_GET_TORRENT_FEED){
-                        List<RutrackerFeedParcer.Entry> entries = (List<RutrackerFeedParcer.Entry>) id;
+                       // List<RutrackerFeedParcer.Entry> entries = ((DataResponse) id);
                     }
             }
         }, new IErrorListener() {
