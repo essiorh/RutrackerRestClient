@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
     public void getCategoriesRequest(final IResponseListener responseListener
             , final IErrorListener errorListener) {
 
-        ApiServiceHelper.getCategories(new ResultReceiver(new Handler()) {
+        ApiServiceHelper.getImageUrl(new ResultReceiver(new Handler()) {
             @Override
             protected void onReceiveResult(int resultCode, Bundle resultData) {
                 if (resultData.containsKey(ApiService.ERROR_KEY)) {
