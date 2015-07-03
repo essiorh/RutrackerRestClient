@@ -3,7 +3,10 @@ package com.rest.rutracker.rutrackerrestclient.data.api.response;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.rest.rutracker.rutrackerrestclient.data.model.RutrackerFeedParcer;
+
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by ilia on 23.06.15.
@@ -25,6 +28,7 @@ public class DataResponse implements Serializable {
  */
     private long id;
     private String mXMLString;
+    List<RutrackerFeedParcer.Entry> mXMLEntry;
 
     public DataResponse(String xml){
         mXMLString=xml;
@@ -36,6 +40,10 @@ public class DataResponse implements Serializable {
 
     public DataResponse(long id) {
         this.id = id;
+    }
+
+    public DataResponse(List<RutrackerFeedParcer.Entry> parse) {
+        mXMLEntry=parse;
     }
 
 

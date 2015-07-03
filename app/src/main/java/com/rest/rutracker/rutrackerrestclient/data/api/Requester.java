@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 
 
 import com.rest.rutracker.rutrackerrestclient.data.api.response.DataResponse;
@@ -16,10 +17,12 @@ import com.rest.rutracker.rutrackerrestclient.data.containers.Val;
 import com.rest.rutracker.rutrackerrestclient.AppController;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.rest.rutracker.rutrackerrestclient.data.model.RutrackerFeedParcer;
 import com.rest.rutracker.rutrackerrestclient.ui.framework.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.rest.rutracker.rutrackerrestclient.data.model.AppContentProvider.CONTENT_URI_ARTICLES;
 import static com.rest.rutracker.rutrackerrestclient.data.model.AppContentProvider.getArticlesUri;
@@ -40,6 +44,7 @@ public class Requester {
     public static final String DEFAULT_MOVIE_URL = "2200.atom";
 
     private static final String SERVER = "http://feed.rutracker.org/atom/f/";
+    private static final String TAG = Requester.class.getSimpleName();
 
     public Requester() {
     }
@@ -50,11 +55,15 @@ public class Requester {
         String url = getCategoriesUrl();
         ApiResponse response = restClient.doGet(url);
 
-        String s = convertStreamToString(response.getInputSream());
+        RutrackerFeedParcer rutrackerFeedParcer=new RutrackerFeedParcer();
 
-        DataResponse dateResponse = new DataResponse(s);
-
-        return dateResponse;
+        try {
+            List<RutrackerFeedParcer.Entry> parse = rutrackerFeedParcer.parse(response.getInputSream());
+            DataResponse dataResponse=new DataResponse(parse);
+        } catch (IOException | XmlPullParserException e) {
+            Log.e(TAG, "EXCEPTION", e);
+        }
+        return null;
     }
 
 
