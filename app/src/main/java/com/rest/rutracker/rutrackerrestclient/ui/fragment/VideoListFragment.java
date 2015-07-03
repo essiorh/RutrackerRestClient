@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.rest.rutracker.rutrackerrestclient.data.api.response.DataResponse;
 import com.rest.rutracker.rutrackerrestclient.data.model.RutrackerFeedParcer;
 import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity;
 import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity.*;
@@ -81,20 +82,6 @@ public class VideoListFragment extends Fragment  {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
-        getCategoriesRequest(new IResponseListener() {
-            @Override
-            public void onResponse(Object id, int code) {
-                    if(code == MainActivity.CODE_GET_TORRENT_FEED){
-                        List<RutrackerFeedParcer.Entry> entries = (List<RutrackerFeedParcer.Entry>) id;
-                    }
-            }
-        }, new IErrorListener() {
-            @Override
-            public void onError() {
-
-            }
-        });
     }
 
     @Nullable
@@ -106,10 +93,24 @@ public class VideoListFragment extends Fragment  {
         return rv;
     }
 
-    private void setupRecyclerView(RecyclerView recyclerView) {
+    private void setupRecyclerView(final RecyclerView recyclerView) {
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        recyclerView.setAdapter(new SimpleStringRecyclerViewAdapter(getActivity(),
-                getRandomSublist(Cheeses.sCheeseStrings, 30)));
+
+        getCategoriesRequest(new IResponseListener() {
+            @Override
+            public void onResponse(Object id, int code) {
+                if (code == MainActivity.CODE_GET_TORRENT_FEED) {
+                    List<RutrackerFeedParcer.Entry> entries =((DataResponse) id).getXMLEntry();
+                    recyclerView.setAdapter(new SimpleStringRecyclerViewAdapter(getActivity(),
+                            entries));
+                }
+            }
+        }, new IErrorListener() {
+            @Override
+            public void onError() {
+
+            }
+        });
     }
 
     private List<String> getRandomSublist(String[] array, int amount) {
@@ -190,33 +191,38 @@ public class VideoListFragment extends Fragment  {
 
         private final TypedValue mTypedValue = new TypedValue();
         private int mBackground;
-        private List<String> mValues;
+        private List<RutrackerFeedParcer.Entry> mValues;
 
         public static class ViewHolder extends RecyclerView.ViewHolder {
-            public String mBoundString;
+            public String mBoundLink;
 
             public final View mView;
             public final ImageView mImageView;
-            public final TextView mTextView;
+            public final TextView mTitleTextView;
+            public final TextView mDescTextView;
+            public final TextView mSizeTextView;
+
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
                 mImageView = (ImageView) view.findViewById(R.id.avatar);
-                mTextView = (TextView) view.findViewById(android.R.id.text1);
+                mTitleTextView  = (TextView) view.findViewById(R.id.titleTextView);
+                mDescTextView = (TextView) view.findViewById(R.id.descTextView);
+                mSizeTextView = (TextView) view.findViewById(R.id.sizeTextView);
             }
 
             @Override
             public String toString() {
-                return super.toString() + " '" + mTextView.getText();
+                return super.toString() + " '" + mBoundLink;
             }
         }
 
-        public String getValueAt(int position) {
+        public RutrackerFeedParcer.Entry getValueAt(int position) {
             return mValues.get(position);
         }
 
-        public SimpleStringRecyclerViewAdapter(Context context, List<String> items) {
+        public SimpleStringRecyclerViewAdapter(Context context, List<RutrackerFeedParcer.Entry> items) {
             context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
             mBackground = mTypedValue.resourceId;
             mValues = items;
@@ -232,20 +238,28 @@ public class VideoListFragment extends Fragment  {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mBoundString = mValues.get(position);
-            holder.mTextView.setText(mValues.get(position));
+            RutrackerFeedParcer.Entry entry = mValues.get(position);
+            holder.mBoundLink = entry.link;
+            String titleRaw = entry.title;
+            int i = titleRaw.indexOf("/");
+            String Title= titleRaw.substring(0, i);
+         //   String[] split = titleRaw.split("^(\\[|\\])$");
+
+            holder.mTitleTextView.setText(Title);
+            holder.mDescTextView.setText(Title);
+            holder.mSizeTextView.setText(Title);
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, DetailActivity.class);
-                    intent.putExtra(DetailActivity.TORRENT_VIEW_TOPIC_LINK, holder.mBoundString);
+                    intent.putExtra(DetailActivity.TORRENT_VIEW_TOPIC_LINK, holder.mBoundLink);
 
                     context.startActivity(intent);
                 }
             });
-
+            // TODO: ADD IMAGE REQUEST TO RUTRACKER TOPIC
             Glide.with(holder.mImageView.getContext())
                     .load(Cheeses.getRandomCheeseDrawable())
                     .fitCenter()

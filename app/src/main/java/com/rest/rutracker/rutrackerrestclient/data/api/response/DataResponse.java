@@ -28,6 +28,8 @@ public class DataResponse implements Serializable {
  */
     private long id;
     private String mXMLString;
+
+
     List<RutrackerFeedParcer.Entry> mXMLEntry;
 
     public DataResponse(String xml){
@@ -54,4 +56,9 @@ public class DataResponse implements Serializable {
     public String getXMLString() {
         return mXMLString;
     }
+
+    public List<RutrackerFeedParcer.Entry> getXMLEntry() {
+        return mXMLEntry;
+    }
+
 }
