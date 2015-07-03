@@ -27,8 +27,6 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
      * USed in {@link IResponseListener} for detect that we received LIST OF XML ENTRY
      */
     public static final int CODE_GET_TORRENT_FEED=0;
-    private static final int CODE_GET_IMAGE = 1;
-    private static final String KEY_TORRENT_VIEW_TOPIC = "4869690";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
-            getTorrent();
             return true;
         }
 
@@ -75,38 +72,7 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
 
 
 
-    private void getTorrent() {
-        getImageUrlRequest(new IResponseListener() {
-            @Override
-            public void onResponse(Object object, int code) {
-                if(code == CODE_GET_IMAGE){
-                    ///
-                    String imageUrl = ((DescriptionDataResponse)object).getUrlImage();
-                    Log.d(imageUrl,imageUrl);
-                }
-            }
-        }, null);
 
-    }
-
-    public void getImageUrlRequest(final IResponseListener responseListener
-            , final IErrorListener errorListener) {
-
-        ApiServiceHelper.getImageUrl(new ViewTopicRequest(KEY_TORRENT_VIEW_TOPIC),new ResultReceiver(new Handler()) {
-            @Override
-            protected void onReceiveResult(int resultCode, Bundle resultData) {
-                if (resultData.containsKey(ApiService.ERROR_KEY)) {
-                    if (errorListener != null) {
-                        errorListener.onError();
-                    }
-                } else {
-                    if (responseListener != null) {
-                        responseListener.onResponse(resultData.getSerializable(ApiService.RESPONSE_OBJECT_KEY), CODE_GET_IMAGE);
-                    }
-                }
-            }
-        });
-    }
 
     @Override
     public void onFragmentInteraction(Uri uri) {

@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.rest.rutracker.rutrackerrestclient.data.api.response.DataResponse;
+import com.rest.rutracker.rutrackerrestclient.data.containers.InfoContainer;
 import com.rest.rutracker.rutrackerrestclient.data.model.RutrackerFeedParcer;
 import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity;
 import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity.*;
@@ -239,11 +240,9 @@ public class VideoListFragment extends Fragment  {
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Context context = v.getContext();
-                    Intent intent = new Intent(context, DetailActivity.class);
-                    intent.putExtra(DetailActivity.TORRENT_VIEW_TOPIC_LINK, holder.mBoundString);
+                    InfoContainer infoContainer = new InfoContainer("Torrent name", "4869690");
+                    DetailActivity.startActivity(v.getContext(),infoContainer);
 
-                    context.startActivity(intent);
                 }
             });
 

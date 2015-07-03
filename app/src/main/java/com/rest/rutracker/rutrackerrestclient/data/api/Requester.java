@@ -115,18 +115,13 @@ public class Requester {
                 break;
             }
 
-            Elements elementsBodyDescription = doc.getElementsByClass("post_body");
-            for (Element thisArt : elementsPostImage) {
-                String title = thisArt.attr("title");
-                dataResponse = new DescriptionDataResponse(title);
-                Log.d(TAG, "hello");
-                break;
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return dataResponse;
     }
+
+
 
     private String convertStreamToString(java.io.InputStream is) {
         java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
