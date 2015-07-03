@@ -34,9 +34,9 @@ public class RestClient {
             URL obj = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
             connection.setRequestMethod(GET);
-            connection.setDoInput(true);
+          //  connection.setDoInput(true);
 
-            setDefaultHeaders(connection);
+        //    setDefaultHeaders(connection);
             if (headers != null) {
                 for (Map.Entry<String, String> currentHeader : headers.entrySet()) {
                     connection.setRequestProperty(currentHeader.getKey(), currentHeader.getValue());

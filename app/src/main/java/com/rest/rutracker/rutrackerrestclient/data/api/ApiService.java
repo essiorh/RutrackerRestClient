@@ -17,6 +17,9 @@ public class ApiService extends IntentService {
     public static final String ERROR_KEY = "ERROR_KEY";
     public static final String REQUEST_OBJECT_KEY = "REQUEST_OBJECT_KEY";
     public static final String RESPONSE_OBJECT_KEY = "RESPONSE_OBJECT_KEY";
+
+    public static final int ACTION_GET_OUR_MOVIE_RSS_FEED = 101;
+
     public static final int ACTION_GET_CATEGORIES = 1;
     public static final int ACTION_GET_ARTICLES = 2;
     public static final int ACTION_ADD_ARTICLE = 3;
@@ -45,6 +48,9 @@ public class ApiService extends IntentService {
         Bundle bundle = new Bundle();
 
         switch (action) {
+            case ACTION_GET_OUR_MOVIE_RSS_FEED:
+                response =requester.getMovies();
+                break;
 
             case ACTION_GET_CATEGORIES:
                 response = requester.getCategories();
@@ -74,7 +80,7 @@ public class ApiService extends IntentService {
         if (response == null) {
             bundle.putBoolean(ERROR_KEY, true);
         } else {
-            bundle.putParcelable(RESPONSE_OBJECT_KEY, response);
+            bundle.putSerializable(RESPONSE_OBJECT_KEY, response);
         }
         return bundle;
     }

@@ -3,13 +3,16 @@ package com.rest.rutracker.rutrackerrestclient.data.api.response;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
+
 /**
  * Created by ilia on 23.06.15.
  *
  * @author ilia
  */
-public class DataResponse implements Parcelable {
-    public static final Creator<DataResponse> CREATOR
+public class DataResponse implements Serializable {
+
+ /*   public static final Creator<DataResponse> CREATOR
             = new Creator<DataResponse>() {
         public DataResponse createFromParcel(Parcel in) {
             return new DataResponse(in);
@@ -19,7 +22,13 @@ public class DataResponse implements Parcelable {
             return new DataResponse[size];
         }
     };
+ */
     private long id;
+    private String mXMLString;
+
+    public DataResponse(String xml){
+        mXMLString=xml;
+    }
 
     public DataResponse() {
         id = 0;
@@ -29,21 +38,12 @@ public class DataResponse implements Parcelable {
         this.id = id;
     }
 
-    public DataResponse(Parcel in) {
-        id = in.readLong();
-    }
 
     public long getId() {
         return id;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(id);
+    public String getXMLString() {
+        return mXMLString;
     }
 }

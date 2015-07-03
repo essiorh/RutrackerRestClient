@@ -16,8 +16,5 @@
   -->
 
 <resources>
-    <dimen name="detail_backdrop_height">256dp</dimen>
-    <dimen name="card_margin">16dp</dimen>
-    <dimen name="fab_margin">16dp</dimen>
-    <dimen name="list_item_avatar_size">40dp</dimen>
+    <color name="window_background">#FFF5F5F5</color>
 </resources>

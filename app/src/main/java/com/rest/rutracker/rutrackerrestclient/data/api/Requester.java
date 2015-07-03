@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 
 import static com.rest.rutracker.rutrackerrestclient.data.model.AppContentProvider.CONTENT_URI_ARTICLES;
@@ -36,10 +37,27 @@ import static com.rest.rutracker.rutrackerrestclient.data.model.OpenDBHelper.COL
 
 public class Requester {
 
-    private static final String SERVER = "http://api.rutracker.org/v1/";
+    public static final String DEFAULT_MOVIE_URL = "2200.atom";
+
+    private static final String SERVER = "http://feed.rutracker.org/atom/f/";
 
     public Requester() {
     }
+
+    public DataResponse getMovies() {
+
+        RestClient restClient = new RestClient();
+        String url = getCategoriesUrl();
+        ApiResponse response = restClient.doGet(url);
+
+        String s = convertStreamToString(response.getInputSream());
+
+        DataResponse dateResponse = new DataResponse(s);
+
+        return dateResponse;
+    }
+
+
     private static JSONObject convertInputStreamToJSONObject(InputStream inputStream)
             throws JSONException {
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
@@ -58,6 +76,7 @@ public class Requester {
             e.printStackTrace();
         }
         return new JSONObject(result); }
+
     public DataResponse getCategories() {
 
         RestClient restClient = new RestClient();
@@ -235,13 +254,22 @@ public class Requester {
                             , values, null, null);
         }
     }
+
+
+
+    static String convertStreamToString(java.io.InputStream is) {
+        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
+    }
+
+
     @NonNull
     private Gson getGSON() {
         return new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss Z").create();
     }
 
     private String getCategoriesUrl() {
-        return SERVER + "get_tor_topic_data?by=topic_id&val=4876495";
+        return SERVER + DEFAULT_MOVIE_URL;
     }
 
     private String getArticlesUrl() {
@@ -306,6 +334,7 @@ public class Requester {
         }
         return null;
     }
+
 
     private static class CategoriesContainer {
         public Val[] categories;

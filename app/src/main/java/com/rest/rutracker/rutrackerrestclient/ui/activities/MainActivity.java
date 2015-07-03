@@ -1,10 +1,13 @@
 package com.rest.rutracker.rutrackerrestclient.ui.activities;
 
+import android.net.Uri;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,17 +16,30 @@ import android.widget.Button;
 import com.rest.rutracker.rutrackerrestclient.R;
 import com.rest.rutracker.rutrackerrestclient.data.api.ApiService;
 import com.rest.rutracker.rutrackerrestclient.data.api.ApiServiceHelper;
+import com.rest.rutracker.rutrackerrestclient.ui.fragment.VideoListFragment;
 
 
-public class MainActivity extends AppCompatActivity implements Button.OnClickListener {
-    private Button buttonGetTorrent;
+public class MainActivity extends AppCompatActivity implements VideoListFragment.OnFragmentInteractionListener {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        buttonGetTorrent = (Button) findViewById(R.id.get_torrent);
-        buttonGetTorrent.setOnClickListener(this);
+        // Setup custom action bar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        final ActionBar ab = getSupportActionBar();
+        ab.setHomeAsUpIndicator(R.drawable.ic_menu);
+        ab.setDisplayHomeAsUpEnabled(true);
+
+        VideoListFragment videoListFragment=VideoListFragment.newInstance("name","name2");
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.FragmentContainer, videoListFragment)
+                .commit();
+
     }
 
     @Override
@@ -41,20 +57,15 @@ public class MainActivity extends AppCompatActivity implements Button.OnClickLis
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_search) {
+            getTorrent();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.get_torrent:
-                getTorrent();
-        }
-    }
+
 
     private void getTorrent() {
         getCategoriesRequest(new IResponseListener() {
@@ -84,11 +95,16 @@ public class MainActivity extends AppCompatActivity implements Button.OnClickLis
         });
     }
 
-    protected interface IErrorListener {
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    public interface IErrorListener {
         void onError();
     }
 
-    protected interface IResponseListener {
+    public interface IResponseListener {
         void onResponse(long id);
     }
 }

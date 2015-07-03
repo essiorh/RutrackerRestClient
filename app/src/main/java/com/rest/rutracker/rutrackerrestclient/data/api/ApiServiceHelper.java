@@ -55,4 +55,8 @@ public class ApiServiceHelper {
     private static Context getContext() {
         return AppController.getAppContext();
     }
+
+    public static void getTorrentFeed(ResultReceiver resultReceiver) {
+        startService(null, ACTION_GET_OUR_MOVIE_RSS_FEED, resultReceiver);
+    }
 }
