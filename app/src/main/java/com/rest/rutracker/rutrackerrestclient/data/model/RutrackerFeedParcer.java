@@ -7,6 +7,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,17 +48,23 @@ public class RutrackerFeedParcer  {
         List entries = new ArrayList();
 
         parser.require(XmlPullParser.START_TAG, ns, "feed");
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.getEventType() != XmlPullParser.START_TAG) {
+        int eventType = parser.getEventType();
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "EEE, DD MMM yyyy HH:mm:ss");
+        while ( parser.next() != XmlPullParser.END_TAG) {
+
+            eventType = parser.getEventType();
+            if (eventType == XmlPullParser.START_DOCUMENT || eventType != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
             // Starts by looking for the entry tag
-            if (name.equals("entry")) {
+            if (name!=null && name.equals("entry")) {
                 entries.add(readEntry(parser));
             } else {
                 skip(parser);
             }
+
         }
         return entries;
     }
@@ -78,7 +85,7 @@ public class RutrackerFeedParcer  {
             if (name.equals("title")) {
                 title = readTitle(parser);
             } else if (name.equals("author")) {
-                summary = readSummary(parser);
+                summary = readAuthor(parser);
             } else if (name.equals("link")) {
                 link = readLink(parser);
             } else {
@@ -101,23 +108,34 @@ public class RutrackerFeedParcer  {
         String link = "";
         parser.require(XmlPullParser.START_TAG, ns, "link");
         String tag = parser.getName();
-        String relType = parser.getAttributeValue(null, "rel");
+
         if (tag.equals("link")) {
-            if (relType.equals("alternate")){
-                link = parser.getAttributeValue(null, "href");
-                parser.nextTag();
-            }
+            link = parser.getAttributeValue(null, "href");
+            parser.nextTag();
         }
         parser.require(XmlPullParser.END_TAG, ns, "link");
         return link;
     }
 
     // Processes summary tags in the feed.
-    private String readSummary(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "summary");
-        String summary = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "summary");
-        return summary;
+    private String readAuthor(XmlPullParser parser) throws IOException, XmlPullParserException {
+        String title="";
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
+            String name = parser.getName();
+
+            if(name.equals("name")){
+                parser.require(XmlPullParser.START_TAG, ns, "name");
+                title = readText(parser);
+                parser.require(XmlPullParser.END_TAG, ns, "name");
+
+            } else {
+                skip(parser);
+            }
+        }
+        return title;
     }
 
     // For the tags title and summary, extracts their text values.

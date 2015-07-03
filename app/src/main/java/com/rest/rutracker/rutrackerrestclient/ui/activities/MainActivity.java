@@ -20,8 +20,10 @@ import com.rest.rutracker.rutrackerrestclient.ui.fragment.VideoListFragment;
 
 
 public class MainActivity extends AppCompatActivity implements VideoListFragment.OnFragmentInteractionListener {
-
-
+    /**
+     * USed in {@link IResponseListener} for detect that we received LIST OF XML ENTRY
+     */
+    public static final int CODE_GET_TORRENT_FEED=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,12 +70,6 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
 
 
     private void getTorrent() {
-        getCategoriesRequest(new IResponseListener() {
-            @Override
-            public void onResponse(long id) {
-                //getCategoriesFromDb();
-            }
-        }, null);
     }
 
     public void getCategoriesRequest(final IResponseListener responseListener
@@ -88,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
                     }
                 } else {
                     if (responseListener != null) {
-                        responseListener.onResponse(0L);
+                        responseListener.onResponse(0L, CODE_GET_TORRENT_FEED);
                     }
                 }
             }
@@ -105,6 +101,6 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
     }
 
     public interface IResponseListener {
-        void onResponse(long id);
+        void onResponse(Object id, int code);
     }
 }
