@@ -19,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.rest.rutracker.rutrackerrestclient.data.model.RutrackerFeedParcer;
+import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity;
 import com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity.*;
 import com.rest.rutracker.rutrackerrestclient.R;
 import com.rest.rutracker.rutrackerrestclient.data.api.ApiService;
@@ -38,7 +40,7 @@ import java.util.Random;
  * Use the {@link VideoListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class VideoListFragment extends Fragment {
+public class VideoListFragment extends Fragment  {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -82,8 +84,10 @@ public class VideoListFragment extends Fragment {
 
         getCategoriesRequest(new IResponseListener() {
             @Override
-            public void onResponse(long id) {
-
+            public void onResponse(Object id, int code) {
+                    if(code == MainActivity.CODE_GET_TORRENT_FEED){
+                        List<RutrackerFeedParcer.Entry> entries = (List<RutrackerFeedParcer.Entry>) id;
+                    }
             }
         }, new IErrorListener() {
             @Override
@@ -138,7 +142,7 @@ public class VideoListFragment extends Fragment {
                     }
                 } else {
                     if (responseListener != null) {
-                        responseListener.onResponse(0L);
+                        responseListener.onResponse(resultData.getSerializable(ApiService.RESPONSE_OBJECT_KEY),MainActivity.CODE_GET_TORRENT_FEED);
                     }
                 }
             }
@@ -164,6 +168,8 @@ public class VideoListFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
+
 
     /**
      * This interface must be implemented by activities that contain this

@@ -17,9 +17,10 @@ import com.rest.rutracker.rutrackerrestclient.R;
 import com.rest.rutracker.rutrackerrestclient.data.api.ApiService;
 import com.rest.rutracker.rutrackerrestclient.data.api.ApiServiceHelper;
 import com.rest.rutracker.rutrackerrestclient.ui.fragment.VideoListFragment;
+import com.rest.rutracker.rutrackerrestclient.ui.fragment.VideoListFragment.OnFragmentInteractionListener;
 
 
-public class MainActivity extends AppCompatActivity implements VideoListFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
     /**
      * USed in {@link IResponseListener} for detect that we received LIST OF XML ENTRY
      */
@@ -72,30 +73,11 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
     private void getTorrent() {
     }
 
-    public void getCategoriesRequest(final IResponseListener responseListener
-            , final IErrorListener errorListener) {
-
-        ApiServiceHelper.getCategories(new ResultReceiver(new Handler()) {
-            @Override
-            protected void onReceiveResult(int resultCode, Bundle resultData) {
-                if (resultData.containsKey(ApiService.ERROR_KEY)) {
-                    if (errorListener != null) {
-                        errorListener.onError();
-                    }
-                } else {
-                    if (responseListener != null) {
-                        responseListener.onResponse(0L, CODE_GET_TORRENT_FEED);
-                    }
-                }
-            }
-        });
-    }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
 
     }
-
     public interface IErrorListener {
         void onError();
     }
@@ -103,4 +85,5 @@ public class MainActivity extends AppCompatActivity implements VideoListFragment
     public interface IResponseListener {
         void onResponse(Object id, int code);
     }
+
 }
