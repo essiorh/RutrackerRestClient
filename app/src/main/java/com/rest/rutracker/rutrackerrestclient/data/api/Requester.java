@@ -56,14 +56,14 @@ public class Requester {
         ApiResponse response = restClient.doGet(url);
 
         RutrackerFeedParcer rutrackerFeedParcer=new RutrackerFeedParcer();
-
+        DataResponse dataResponse = null;
         try {
             List<RutrackerFeedParcer.Entry> parse = rutrackerFeedParcer.parse(response.getInputSream());
-            DataResponse dataResponse=new DataResponse(parse);
+            dataResponse=new DataResponse(parse);
         } catch (IOException | XmlPullParserException e) {
             Log.e(TAG, "EXCEPTION", e);
         }
-        return null;
+        return dataResponse;
     }
 
 
