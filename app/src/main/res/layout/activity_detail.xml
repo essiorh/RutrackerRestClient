@@ -47,7 +47,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
         android:id="@+id/buttonLoadTorrentFile"
-        android:src="@drawable/ic_play_for_work_white_36dp"
+        android:src="@android:drawable/ic_media_play"
         app:layout_anchor="@+id/appbar"
         app:layout_anchorGravity="bottom|right|end" />
 

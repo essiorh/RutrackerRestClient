@@ -1,13 +1,12 @@
 package com.rest.rutracker.rutrackerrestclient.data.api;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.Xml;
-import android.view.Window;
 
 
 import com.rest.rutracker.rutrackerrestclient.data.api.request.ViewTopicRequest;
@@ -52,6 +51,7 @@ public class Requester {
 
     private static final String SERVER = "http://feed.rutracker.org/atom/f/";
     private static final String BASE_VIEW_TOPIC_URL = "http://rutracker.org/forum/viewtopic.php?t=";
+    private static final String BASE_TORRENT_URL = "http://dl.rutracker.org/forum/dl.php?t=";
     private static final String BASE_RUTRACKER_URL = "http://rutracker.org/";
 
 
@@ -77,7 +77,43 @@ public class Requester {
         return dataResponse;
     }
 
+    @SuppressLint("SdCardPath")
+    public void getTorrent() {
+        RestClient restClient = new RestClient();
 
+        ApiResponse apiResponseTorrent = restClient.doPostTorrent(
+                "http://dl.rutracker.org/forum/dl.php?t=4438566", "PARTIZANNY", "PARTIZANNY");
+        //String s = apiResponseTorrent.getInputSream().toString();
+        //Log.d("mylog", s);
+    }
+
+    public DescriptionDataResponse getDescription(ViewTopicRequest keyViewTopic) {
+
+        RestClient restClient = new RestClient();
+        String url = getDescriptionUrl(keyViewTopic.getKeyViewTopic());
+        ApiResponse response = restClient.doGet(url);
+        DescriptionDataResponse dataResponse = null;
+        try {
+            Document doc = Jsoup.parse(response.getInputSream(), "windows-1251", BASE_RUTRACKER_URL);
+            Elements elementsPostImage = doc.getElementsByClass("postImg");
+            for (Element thisArt : elementsPostImage) {
+                String title = thisArt.attr("title");
+                dataResponse = new DescriptionDataResponse(title);
+                Log.d(TAG, "hello");
+                break;
+            }
+            Element content = doc.getElementsByClass("post_wrap").first();
+
+            String html = content.html();
+            dataResponse.setHtml(html);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        getTorrent();
+
+        return dataResponse;
+    }
 
 
     private static JSONObject convertInputStreamToJSONObject(InputStream inputStream)
@@ -99,32 +135,6 @@ public class Requester {
         }
         return new JSONObject(result); }
 
-    public DescriptionDataResponse getDescription(ViewTopicRequest keyViewTopic) {
-
-        RestClient restClient = new RestClient();
-        String url = getDedcriptionUrl(keyViewTopic.getKeyViewTopic());
-        ApiResponse response = restClient.doGet(url);
-        DescriptionDataResponse dataResponse = null;
-        try {
-            Document doc = Jsoup.parse(response.getInputSream(), "windows-1251", BASE_RUTRACKER_URL);
-            Elements elementsPostImage = doc.getElementsByClass("postImg");
-            for (Element thisArt : elementsPostImage) {
-                String title = thisArt.attr("title");
-                dataResponse = new DescriptionDataResponse(title);
-                Log.d(TAG, "hello");
-                break;
-            }
-            Element content = doc.getElementsByClass("post_wrap").first();
-
-            String html = content.html();
-            dataResponse.setHtml(html);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return dataResponse;
-    }
-
-
 
     private String convertStreamToString(java.io.InputStream is) {
         java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
@@ -145,38 +155,10 @@ public class Requester {
             e.printStackTrace();
         }
 
-
         ResultContainer responseContainer = deserialize(gson
                 , response
                 , ResultContainer.class);
 
-        /*if (responseContainer != null) {
-
-            ArrayList<Long> ids = new ArrayList<>();
-            Cursor cursor = AppController.getAppContext().getContentResolver()
-                    .query(CONTENT_URI_CATEGORIES
-                            , new String[]{COLUMN_ID}
-                            , null
-                            , null
-                            , null);
-            while (cursor.moveToNext()) {
-                ids.add(cursor.getLong(cursor.getColumnIndex(COLUMN_ID)));
-            }
-            cursor.close();
-
-            for (Val val : responseContainer.categories) {
-                ids.remove(val.getId());
-
-                AppController.getAppContext().getContentResolver()
-                        .insert(CONTENT_URI_CATEGORIES, val.buildContentValues());
-            }
-
-            if (ids.size() > 0) {
-                AppController.getAppContext().getContentResolver()
-                        .delete(CONTENT_URI_CATEGORIES
-                                , formatArrayCondition(COLUMN_ID, ids), null);
-            }
-        }*/
         return new DataResponse();
     }
 
@@ -319,8 +301,12 @@ public class Requester {
         return SERVER + DEFAULT_MOVIE_URL;
     }
 
-    private String getDedcriptionUrl(String keyViewTopic) {
+    private String getDescriptionUrl(String keyViewTopic) {
         return BASE_VIEW_TOPIC_URL + keyViewTopic;
+    }
+
+    private String getTorrentUrl(String keyViewTopic) {
+        return BASE_TORRENT_URL + keyViewTopic;
     }
 
     private String getArticlesUrl() {

@@ -217,6 +217,7 @@ public class DetailActivity extends AppCompatActivity implements Button.OnClickL
             String Content = mValues.get(position);
             holder.mTitleTextView.setText(nameTorrent);
             holder.mDescTextView.setText(Html.fromHtml(Content));
+            holder.mDescTextView.setClickable(true);
         }
 
         @Override

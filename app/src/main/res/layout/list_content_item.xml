@@ -37,7 +37,9 @@
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceListItem"
             android:text="text"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:linksClickable="true" />
 
 
 

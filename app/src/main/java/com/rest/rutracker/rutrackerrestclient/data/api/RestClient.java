@@ -1,15 +1,21 @@
 package com.rest.rutracker.rutrackerrestclient.data.api;
 
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.codec.binary.Base64;
 
 public class RestClient {
 
@@ -47,6 +53,43 @@ public class RestClient {
             Log.d(REST_CLIENT, "doGet: " + url);
         } catch (Exception e) {
             Log.e(REST_CLIENT, Log.getStackTraceString(e));
+        }
+
+        return apiResponse;
+    }
+
+    public ApiResponse doPostTorrent(String stringUrl, String username, String password) {
+        ApiResponse apiResponse = new ApiResponse();
+
+        try {
+            URL url = new URL(stringUrl);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod(POST);
+            String userpassword = username + ":" + password;
+            String basicAuth = "Basic " + new String(new Base64().encode(userpassword.getBytes()));
+            urlConnection.setRequestProperty ("Authorization", basicAuth);
+            urlConnection.setDoOutput(true);
+            urlConnection.connect();
+
+
+            int responceCode = urlConnection.getResponseCode();
+
+            File sdcard = Environment.getExternalStorageDirectory();
+            File file = new File(sdcard, "filename.torrent");
+
+            FileOutputStream fileOutput = new FileOutputStream(file);
+            InputStream inputStream = urlConnection.getInputStream();
+
+            byte[] buffer = new byte[1024];
+            int bufferLength = 0;
+
+            while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+                fileOutput.write(buffer, 0, bufferLength);
+            }
+            fileOutput.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return apiResponse;
