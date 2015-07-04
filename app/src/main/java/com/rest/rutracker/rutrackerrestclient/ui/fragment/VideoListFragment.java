@@ -259,16 +259,21 @@ public class VideoListFragment extends Fragment  {
             String titleRaw = entry.title;
             int i = titleRaw.indexOf("/");
             String Title= titleRaw.substring(0, i);
-         //   String[] split = titleRaw.split("^(\\[|\\])$");
+            final String[] split = titleRaw.split("(\\[|\\])+");
 
-            holder.mTitleTextView.setText(Title);
-            holder.mDescTextView.setText(Title);
-            holder.mSizeTextView.setText(Title);
+            if(split.length == 4){
+                holder.mTitleTextView.setText(split[0]);
+                holder.mDescTextView.setText(split[1]);
+                holder.mSizeTextView.setText(split[3]);
+            }else {
+                holder.mTitleTextView.setText(split[0]);
+            }
+
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    InfoContainer infoContainer = new InfoContainer("Torrent name", "4869690");
+                    InfoContainer infoContainer = new InfoContainer(split[0], holder.mBoundLink.split("t=")[1] );
                     DetailActivity.startActivity(v.getContext(),infoContainer);
 
                 }
