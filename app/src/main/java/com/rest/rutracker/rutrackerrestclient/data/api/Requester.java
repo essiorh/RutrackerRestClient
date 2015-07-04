@@ -114,7 +114,10 @@ public class Requester {
                 Log.d(TAG, "hello");
                 break;
             }
+            Element content = doc.getElementsByClass("post_wrap").first();
 
+            String html = content.html();
+            dataResponse.setHtml(html);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -8,6 +8,7 @@ package com.rest.rutracker.rutrackerrestclient.data.api.response;
 public class DescriptionDataResponse extends DataResponse {
 
     private String urlImage;
+    private String mHtml;
 
     public DescriptionDataResponse(String urlImage) {
         super();
@@ -17,5 +18,13 @@ public class DescriptionDataResponse extends DataResponse {
 
     public String getUrlImage() {
         return urlImage;
+    }
+
+    public void setHtml(String html) {
+        mHtml = html;
+    }
+
+    public String getHtml() {
+        return mHtml;
     }
 }
