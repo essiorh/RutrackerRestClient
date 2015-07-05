@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.rest.rutracker.rutrackerrestclient" >
+    package="pct.droid.rutrackerrestclient" >
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:name=".AppController"
@@ -29,11 +34,17 @@
             android:parentActivityName=".ui.activities.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.rest.rutracker.rutrackerrestclient.ui.activities.MainActivity" />
+                android:value="pct.droid.rutrackerrestclient.ui.activities.MainActivity" />
         </activity>
         <activity
             android:name="pct.droid.activities.StreamLoadingActivity"
             android:label="@string/title_activity_stream_loading" >
+        </activity>
+        <activity
+            android:name=".ui.activities.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:windowSoftInputMode="adjustResize|stateVisible" >
+
         </activity>
     </application>
 
