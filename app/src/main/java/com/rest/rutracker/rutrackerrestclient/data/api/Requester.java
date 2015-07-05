@@ -9,15 +9,20 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
+import com.rest.rutracker.rutrackerrestclient.data.api.request.DataAuthRequest;
 import com.rest.rutracker.rutrackerrestclient.data.api.request.ViewTopicRequest;
+import com.rest.rutracker.rutrackerrestclient.data.api.response.DataLoginResponse;
 import com.rest.rutracker.rutrackerrestclient.data.api.response.DataResponse;
 import com.rest.rutracker.rutrackerrestclient.data.api.request.DataRequest;
 import com.rest.rutracker.rutrackerrestclient.data.api.request.DeleteDataRequest;
 import com.rest.rutracker.rutrackerrestclient.data.api.response.DescriptionDataResponse;
+import com.rest.rutracker.rutrackerrestclient.data.api.response.TorrentFileDataResponse;
 import com.rest.rutracker.rutrackerrestclient.data.containers.Article;
 import com.rest.rutracker.rutrackerrestclient.data.containers.TopicData;
 import com.rest.rutracker.rutrackerrestclient.data.containers.Val;
-import com.rest.rutracker.rutrackerrestclient.AppController;
+
+import pct.droid.activities.StreamLoadingActivity;
+import pct.droid.base.PopcornApplication;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.rest.rutracker.rutrackerrestclient.data.model.RutrackerFeedParcer;
@@ -25,6 +30,7 @@ import com.rest.rutracker.rutrackerrestclient.ui.framework.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -37,7 +43,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.rest.rutracker.rutrackerrestclient.data.model.AppContentProvider.CONTENT_URI_ARTICLES;
 import static com.rest.rutracker.rutrackerrestclient.data.model.AppContentProvider.getArticlesUri;
@@ -45,14 +53,22 @@ import static com.rest.rutracker.rutrackerrestclient.data.model.OpenDBHelper.ART
 import static com.rest.rutracker.rutrackerrestclient.data.model.OpenDBHelper.COLUMN_ID;
 
 
+
 public class Requester {
 
     public static final String DEFAULT_MOVIE_URL = "2200.atom";
 
+    private static final String RUTRACKER_AUTH_URL  = "http://login.rutracker.org/forum/login.php";
     private static final String SERVER = "http://feed.rutracker.org/atom/f/";
     private static final String BASE_VIEW_TOPIC_URL = "http://rutracker.org/forum/viewtopic.php?t=";
     private static final String BASE_TORRENT_URL = "http://dl.rutracker.org/forum/dl.php?t=";
     private static final String BASE_RUTRACKER_URL = "http://rutracker.org/";
+
+	private static final String POST_PARAM_REDIRECT			= "redirect";
+	private static final String POST_PARAM_LOGIN_USER		= "login_user";
+	private static final String POST_PARAM_LOGIN			= "login";
+	private static final String POST_PARAM_LOGIN_PASSWORD	= "login_password";
+
 
 
     private static final String TAG = Requester.class.getSimpleName();
@@ -60,13 +76,66 @@ public class Requester {
     public Requester() {
     }
 
+	private Map<String,String> auth(String login, String password){
+		Map<String, String> cookie = null;
+		String result = null;
+		try {
+
+
+			Connection.Response response = Jsoup.connect("http://login.rutracker.org/forum/login.php")
+					.method(Connection.Method.GET)
+					.execute();
+
+			response = Jsoup.connect("http://login.rutracker.org/forum/login.php")
+					.referrer("http://rutracker.org/forum/index.php")
+					.data("login_username", login)
+					.data("login", login)
+					.data("login_password", password)
+					.cookies(response.cookies())
+					.method(Connection.Method.POST)
+					.execute();
+
+			cookie	= response.cookies();
+
+
+/*
+			if(cookie!=null && cookie.size() > 0){
+				StringBuilder cookieContainer = new StringBuilder();
+				for(Map.Entry<String,String> entry: cookie.entrySet()){
+					if(cookieContainer.length() > 0){
+						cookieContainer.append(";");
+					}
+					cookieContainer.append(entry.getKey());
+					cookieContainer.append(":");
+					cookieContainer.append(entry.getValue());
+				}
+				result	= cookieContainer.toString();
+			}
+			*/
+
+		}catch(Exception e){e.printStackTrace();}
+		return cookie;
+	}
+
+	public DataLoginResponse getAuth(DataAuthRequest data){
+
+		Map<String, String> cookie	= auth(data.getLogin(), data.getPassword());
+		PopcornApplication.setCookie( cookie );
+
+		return new DataLoginResponse(cookie != null);
+
+	}
+
     public DataResponse getMovies() {
 
-        RestClient restClient = new RestClient();
-        String url = getCategoriesUrl();
-        ApiResponse response = restClient.doGet(url);
+        RestClient restClient   = new RestClient();
+        String url              = getCategoriesUrl();
+		//-------------------Authorization -------------
 
-        RutrackerFeedParcer rutrackerFeedParcer=new RutrackerFeedParcer();
+        ApiResponse response	= null;
+		response    			= restClient.doGet(url);
+
+        RutrackerFeedParcer rutrackerFeedParcer = new RutrackerFeedParcer();
         DataResponse dataResponse = null;
         try {
             List<RutrackerFeedParcer.Entry> parse = rutrackerFeedParcer.parse(response.getInputSream());
@@ -77,42 +146,44 @@ public class Requester {
         return dataResponse;
     }
 
-    @SuppressLint("SdCardPath")
-    public void getTorrent() {
-        RestClient restClient = new RestClient();
 
-        ApiResponse apiResponseTorrent = restClient.doPostTorrent(
-                "http://dl.rutracker.org/forum/dl.php?t=4438566", "PARTIZANNY", "PARTIZANNY");
-        //String s = apiResponseTorrent.getInputSream().toString();
-        //Log.d("mylog", s);
-    }
+	public DescriptionDataResponse getDescription(ViewTopicRequest keyViewTopic) {
 
-    public DescriptionDataResponse getDescription(ViewTopicRequest keyViewTopic) {
+		RestClient restClient = new RestClient();
+		String url = getDescriptionUrl(keyViewTopic.getKeyViewTopic());
+		ApiResponse response = restClient.doGet(url);
+		DescriptionDataResponse dataResponse = null;
+		try {
+			Document doc = Jsoup.parse(response.getInputSream(), "windows-1251", BASE_RUTRACKER_URL);
+			Elements elementsPostImage = doc.getElementsByClass("postImg");
+			for (Element thisArt : elementsPostImage) {
+				String title = thisArt.attr("title");
+				dataResponse = new DescriptionDataResponse(title);
+				Log.d(TAG, "hello");
+				break;
+			}
+			Element content = doc.getElementsByClass("post_wrap").first();
 
-        RestClient restClient = new RestClient();
-        String url = getDescriptionUrl(keyViewTopic.getKeyViewTopic());
-        ApiResponse response = restClient.doGet(url);
-        DescriptionDataResponse dataResponse = null;
-        try {
-            Document doc = Jsoup.parse(response.getInputSream(), "windows-1251", BASE_RUTRACKER_URL);
-            Elements elementsPostImage = doc.getElementsByClass("postImg");
-            for (Element thisArt : elementsPostImage) {
-                String title = thisArt.attr("title");
-                dataResponse = new DescriptionDataResponse(title);
-                Log.d(TAG, "hello");
-                break;
-            }
-            Element content = doc.getElementsByClass("post_wrap").first();
+			String html = content.html();
+			dataResponse.setHtml(html);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-            String html = content.html();
-            dataResponse.setHtml(html);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+		return dataResponse;
+	}
 
-        getTorrent();
+	public TorrentFileDataResponse getTorrent(ViewTopicRequest keyViewTopic) {
 
-        return dataResponse;
+        RestClient restClient 	= new RestClient();
+        String url 				= getTorrentUrl(keyViewTopic.getKeyViewTopic());
+
+        ApiResponse response 	= restClient.doPostTorrent(url, null, PopcornApplication.getCookie());
+		String torrent			= response.getAsText();
+
+		TorrentFileDataResponse torrentResponse = new TorrentFileDataResponse(torrent);
+
+        return torrentResponse;
     }
 
 
@@ -141,156 +212,6 @@ public class Requester {
         return s.hasNext() ? s.next() : "";
     }
 
-
-    public DataResponse getCategories() {
-
-        RestClient restClient = new RestClient();
-        String url = getCategoriesUrl();
-        ApiResponse response = restClient.doGet(url);
-        Gson gson = new Gson();
-        JSONObject newJsonObject=null;
-        try {
-            newJsonObject=convertInputStreamToJSONObject(response.getInputSream());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        ResultContainer responseContainer = deserialize(gson
-                , response
-                , ResultContainer.class);
-
-        return new DataResponse();
-    }
-
-
-    public DataResponse getArticles() {
-
-        RestClient restClient = new RestClient();
-        String url = getArticlesUrl();
-        ApiResponse response = restClient.doGet(url);
-        Gson gson = getGSON();
-        ArticlesContainer responseContainer = deserialize(gson, response, ArticlesContainer.class);
-
-        if (responseContainer != null && responseContainer.articles != null) {
-            ArrayList<Long> ids = new ArrayList<>();
-            Cursor cursor = AppController.getAppContext().getContentResolver()
-                    .query(CONTENT_URI_ARTICLES
-                            , new String[]{COLUMN_ID}, null, null, null);
-
-            while (cursor.moveToNext()) {
-                ids.add(cursor.getLong(cursor.getColumnIndex(COLUMN_ID)));
-            }
-
-            cursor.close();
-
-            for (Article article : responseContainer.articles) {
-                ids.remove(article.getId());
-
-                AppController.getAppContext().getContentResolver()
-                        .insert(CONTENT_URI_ARTICLES,
-                                article.buildContentValues());
-            }
-
-            if (ids.size() > 0) {
-                AppController.getAppContext().getContentResolver()
-                        .delete(getArticlesUri()
-                                , formatArrayCondition(COLUMN_ID, ids), null);
-            }
-        }
-        return new DataResponse();
-    }
-
-    public DataResponse addArticle(DataRequest request) {
-        long id = -1;
-        RestClient restClient = new RestClient();
-        String url = putArticleUrl();
-        Gson gsonSerializer = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
-                .setPrettyPrinting().create();
-        String jsonContent = gsonSerializer.toJson(request.getArticle());
-        Gson gsonDeserializer = getGSON();
-        ApiResponse response = restClient.doPost(url, null, jsonContent);
-        ArticleContainer responseContainer =
-                deserialize(gsonDeserializer, response, ArticleContainer.class);
-
-        if (responseContainer != null && responseContainer.article != null) {
-            id = responseContainer.article.getId();
-            AppController.getAppContext().getContentResolver()
-                    .insert(CONTENT_URI_ARTICLES
-                            , responseContainer.article.buildContentValues());
-
-            if (!TextUtils.isEmpty(request.getAdditionalData())) {
-                addPhotoToArticle(id, request.getAdditionalData());
-            }
-        }
-        return new DataResponse(id);
-    }
-
-    public DataResponse deleteArticle(DeleteDataRequest articleId) {
-
-        long id = articleId.getId();
-        String url = deleteArticleUrl(id);
-        RestClient restClient = new RestClient();
-        ApiResponse response = restClient.doDelete(url);
-
-        if (response.getStatus() == 200) {
-            AppController.getAppContext().getContentResolver()
-                    .delete(getArticlesUri(id), null, null);
-        } else {
-            return new DataResponse(-1);
-        }
-        return new DataResponse(id);
-    }
-
-    public DataResponse editArticle(DataRequest request) {
-
-        if (request.getArticle() == null) {
-            return new DataResponse(-1);
-        }
-
-        long id = request.getArticle().getId();
-        String url = editArticleUrl(id);
-        Gson gsonSerializer = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-        String jsonContent = gsonSerializer.toJson(request.getArticle());
-        RestClient restClient = new RestClient();
-        Gson gson = getGSON();
-
-        ApiResponse response = restClient.doPut(url, jsonContent);
-        ArticleContainer responseContainer = deserialize(gson, response, ArticleContainer.class);
-
-        if (responseContainer != null && responseContainer.article != null) {
-            id = responseContainer.article.getId();
-            AppController.getAppContext().getContentResolver()
-                    .update(getArticlesUri(id)
-                            , responseContainer.article.buildContentValues(), null, null);
-            if (!TextUtils.isEmpty(request.getAdditionalData())) {
-                addPhotoToArticle(id, request.getAdditionalData());
-            }
-        } else {
-            new DataResponse(-1);
-        }
-        return new DataResponse(id);
-    }
-
-    private void addPhotoToArticle(long id, String imagePath) {
-
-        RestClient restClient = new RestClient();
-        String url = addImageUrl(id);
-        Gson gson = new Gson();
-        Uri uri = Uri.parse(imagePath);
-        String utils = Utils.getPath(AppController.getAppContext(), uri);
-        if (utils == null) return;
-        File file = new File(utils);
-        String response = restClient.doUploadFile(url, file, "photo[image]");
-        PhotoContainer responseContainer = deserialize(gson, response, PhotoContainer.class);
-
-        if (responseContainer != null && responseContainer.photo != null) {
-            ContentValues values = new ContentValues();
-            values.put(ARTICLES_PHOTO_URL, responseContainer.photo.url);
-            AppController.getAppContext().getContentResolver()
-                    .update(getArticlesUri(id)
-                            , values, null, null);
-        }
-    }
 
     @NonNull
     private Gson getGSON() {

@@ -13,19 +13,17 @@ public class MediaContainer implements Serializable{
     private String torrentUrl;
     private String torrentName;
     private String imageUrl;
-    private String torrentPath;
+    private String torrentBody;
 
-    public MediaContainer(String torrentUrl, String torrentName, String imageUrl) {
-        this.torrentUrl = torrentUrl;
-        this.torrentName = torrentName;
-        this.imageUrl = imageUrl;
+    public MediaContainer(String torrentUrl, String torrentName, String imageUrl, String torrentBody) {
+        this.torrentUrl 	= torrentUrl;
+        this.torrentName 	= torrentName;
+        this.imageUrl 		= imageUrl;
+        this.torrentBody    = torrentBody;
     }
 
-    public String getTorrentPath() {
-        return torrentPath;
+    public String getTorrentBody() {
+        return torrentBody;
     }
 
-    public void setTorrentPath(String torrentPath) {
-        this.torrentPath = torrentPath;
-    }
 }
