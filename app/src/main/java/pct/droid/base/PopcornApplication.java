@@ -22,7 +22,7 @@ public class PopcornApplication extends Application {
         return appContext;
     }
 
-	public static PopcornApplication getInstance() {
+		public static PopcornApplication getInstance() {
 		return instance;
 	}
 
